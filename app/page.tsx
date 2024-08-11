@@ -1,24 +1,41 @@
-import { db } from "./firebase";
-import { doc, setDoc } from "firebase/firestore";
+"use client";
 
-class Chat {
-  userID: string;
-  chatID: string;
-  constructor(userID: string, chatId: string) {
-    this.userID = userID;
-    this.chatID = chatId;
-  }
-  public async connect() 
-    this.unsub = onSnapshot(doc(db, this.userID, this.chatID), (doc) => {
-      console.log("Current data: ", doc.data());
-  });)
-  }
-}
+import { useEffect, useState } from "react";
+import { Chat, ChatData, Message } from "./Chat";
 
-export default function Home() {
+const InputField = ({ chat }: { chat: Chat }) => {
+  const [message, setMessage] = useState<string>("");
+
   return (
     <div>
-      <h1>Home Page</h1>
+      <input
+        type="text"
+        className="text-black"
+        onChange={(e) => setMessage(e.target.value)}
+        value={message}
+      />
+      <button onClick={(e) => chat.send(message)}>SEND</button>
+    </div>
+  );
+};
+
+export default function Home() {
+  const [chatMessages, setChatMessages] = useState<Message[]>();
+
+  const chat = new Chat("test", "chat"); // userID, chatID
+
+  useEffect(() => {
+    chat.subscribe((doc: ChatData) => {
+      setChatMessages(doc.messages);
+    });
+  }, []);
+
+  return (
+    <div>
+      {chatMessages?.map((m, i) => (
+        <div key={i}>{m.content}</div>
+      ))}
+      <InputField chat={chat} />
     </div>
   );
 }
