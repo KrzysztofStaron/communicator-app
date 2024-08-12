@@ -1,83 +1,66 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Chat, ChatData, Message } from "./Chat";
+import { MessagesRenderer } from "./MessageRenderer";
+import { InputField } from "./InputField";
+import { IoIosArrowBack } from "react-icons/io";
+import { ChatList } from "./ChatList";
 
-const userID = "you";
+export default function App() {
+  const [name, setName] = useState<string>("test_user_1");
+  const [activeView, setActiveView] = useState<string>("Chat");
 
-const MessagesRenderer = ({ messages }: { messages: Message[] }) => {
   useEffect(() => {
-    console.log(messages);
-  }, [messages]);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        setActiveView("Debug");
+      }
+    });
+  }, []);
 
-  return (
-    <div className="grow flex flex-col gap-1 px-2 pt-2">
-      {messages.map((m, i) => {
-        const isMe = m.author == userID;
-        const topNeighbour =
-          messages[i - 1] !== undefined && messages[i - 1].author === m.author;
-        const bottomNeighbour =
-          messages[i + 1] !== undefined && messages[i + 1].author === m.author;
+  const view = () => {
+    switch (activeView) {
+      case "ChatList":
+        return <ChatList name={name} />;
+      case "Chat":
         return (
-          <div
-            key={i}
-            className={`flex ${isMe ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`py-2 min-w-8 px-4 text-center ${
-                isMe
-                  ? `bg-blue-500 rounded-l-3xl ${
-                      topNeighbour ? "rounded-tr-md" : "rounded-tr-3xl"
-                    } ${bottomNeighbour ? "rounded-br-md" : "rounded-br-3xl"}`
-                  : `bg-gray-500 rounded-r-3xl ${
-                      topNeighbour ? "rounded-tl-md" : "rounded-tl-3xl"
-                    } ${bottomNeighbour ? "rounded-bl-md" : "rounded-bl-3xl"}`
-              }`}
-            >
-              {m.content}
-            </div>
-          </div>
+          <ChatPage
+            chatID="chat"
+            name={name}
+            openChatsList={() => setActiveView("ChatList")}
+          />
         );
-      })}
-    </div>
-  );
-};
-const InputField = ({ chat }: { chat: Chat }) => {
-  const [message, setMessage] = useState<string>("");
-
-  const send = () => {
-    chat.send(message);
-    setMessage("");
+      case "Debug":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="name"
+              className="text-black"
+              onChange={(e) => setName(e.target.value)}
+            />
+            <button onClick={() => setActiveView("Chat")}>Log In</button>
+          </>
+        );
+    }
   };
 
-  return (
-    <div className="bg-red-400">
-      <input
-        type="text"
-        className="text-black"
-        onChange={(e) => setMessage(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            send();
-          }
-        }}
-        value={message}
-      />
-      <button
-        onClick={(e) => {
-          send();
-        }}
-      >
-        SEND
-      </button>
-    </div>
-  );
-};
+  return <div className="flex w-screen h-screen flex-col">{view()}</div>;
+}
 
-export default function Home() {
+const ChatPage = ({
+  name,
+  openChatsList,
+  chatID,
+}: {
+  name: string;
+  openChatsList: () => void;
+  chatID: string;
+}) => {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
 
-  const chat = new Chat("test", "chat"); // userID, chatID
+  const chat = new Chat(name, chatID); // userID, chatID
 
   useEffect(() => {
     chat.subscribe((doc: ChatData) => {
@@ -87,8 +70,17 @@ export default function Home() {
 
   return (
     <div className="flex w-screen h-screen flex-col">
-      <MessagesRenderer messages={chatMessages} />
+      <div className="w-full flex bg-stone-900 h-8 text-lg px-2 gap-4">
+        <button
+          onClick={() => openChatsList()}
+          className="flex items-center justify-center"
+        >
+          <IoIosArrowBack />
+        </button>
+        <p className="flex-grow">Chat Name</p>
+      </div>
+      <MessagesRenderer messages={chatMessages} myName={name} />
       <InputField chat={chat} />
     </div>
   );
-}
+};
