@@ -6,6 +6,7 @@ export type ChatData = {
 };
 
 export type Message = {
+  author: string;
   content: string;
 };
 
@@ -25,7 +26,6 @@ export class Chat {
     this.unsub = onSnapshot(doc(db, this.userID, this.chatID), (doc: any) => {
       const data = doc.data();
       this.messages = data.messages;
-      console.log(this.messages);
       callback(data);
     });
   }
@@ -42,7 +42,7 @@ export class Chat {
     const data = await getDoc(ref);
 
     await updateDoc(ref, {
-      messages: [...data!.data()?.messages, { content: msg }],
+      messages: [...data!.data()?.messages, { author: "you", content: msg }],
     });
   }
 }
