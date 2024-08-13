@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Chat } from "./Interfaces";
+import { Chat } from "../Interfaces";
 import { IoIosSend } from "react-icons/io";
 import { throttle } from "lodash";
 

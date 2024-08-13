@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Message } from "./Interfaces";
+import { Message } from "../Interfaces";
 import "./typing.css";
 
 export const MessagesRenderer = ({

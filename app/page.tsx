@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { Chat, ChatData, Message } from "./Interfaces";
-import { MessagesRenderer } from "./MessageRenderer";
-import { InputField } from "./InputField";
+import { MessagesRenderer } from "./app/MessageRenderer";
+import { InputField } from "./app/InputField";
 import { IoIosArrowBack } from "react-icons/io";
-import { ChatList } from "./ChatList";
-import UsersList from "./UsersList";
+import { ChatList } from "./app/ChatList";
+import UsersList from "./app/UsersList";
 
 export default function App() {
   const [name, setName] = useState<string>("test_user_1");
@@ -67,6 +67,7 @@ export default function App() {
 
               createChat();
             }}
+            openChatList={() => setActiveView("ChatList")}
           />
         );
     }

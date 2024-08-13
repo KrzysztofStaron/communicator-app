@@ -1,9 +1,7 @@
 import React from "react";
-import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { db } from "./firebase";
-import "./globals.css";
-import { User } from "./Interfaces";
+import "../globals.css";
+import { User } from "../Interfaces";
 
 const ChatElement = ({
   name,

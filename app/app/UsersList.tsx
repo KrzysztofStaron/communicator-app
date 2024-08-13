@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { DataHelper } from "./Interfaces";
+import { DataHelper } from "../Interfaces";
+import { IoArrowForward } from "react-icons/io5";
 
 const UsersList = ({
   openChat,
   name,
+  openChatList,
 }: {
   openChat: (user: string) => void;
   name: string;
+  openChatList: () => void;
 }) => {
   const [users, setUsers] = useState<string[]>([]);
 
@@ -19,6 +22,12 @@ const UsersList = ({
   }, []);
   return (
     <div className="flex flex-col">
+      <button
+        onClick={() => openChatList()}
+        className="flex items-center justify-end mr-2 my-2"
+      >
+        <IoArrowForward size={24} />
+      </button>
       {users.map((user, i) =>
         name !== user ? (
           <div
