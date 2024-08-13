@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Message } from "./Chat";
+import { Message } from "./Interfaces";
 import "./typing.css";
 
 export const MessagesRenderer = ({
@@ -9,7 +9,7 @@ export const MessagesRenderer = ({
 }: {
   messages: Message[];
   myName: string;
-  writing: boolean;
+  writing?: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 

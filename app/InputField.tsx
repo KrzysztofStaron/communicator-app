@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Chat } from "./Chat";
+import { useState, useEffect, useRef } from "react";
+import { Chat } from "./Interfaces";
 import { IoIosSend } from "react-icons/io";
 import { throttle } from "lodash";
 
@@ -8,11 +8,6 @@ const MAXHEIGHT = 96; // Max height in pixels (24px * 4)
 export const InputField = ({ chat }: { chat: Chat }) => {
   const [message, setMessage] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
-  const handleChange = () => {
-    chat.write(message.trim() != "");
-  };
-  const throttleOnWrite = useCallback(throttle(handleChange, 800), []);
 
   const send = () => {
     if (message.trim()) {
@@ -30,7 +25,6 @@ export const InputField = ({ chat }: { chat: Chat }) => {
         MAXHEIGHT
       )}px`;
     }
-    throttleOnWrite();
   }, [message]);
 
   return (

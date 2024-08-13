@@ -1,7 +1,9 @@
+import React from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
 import "./globals.css";
+import { User } from "./Interfaces";
 
 const ChatElement = ({
   name,
@@ -11,36 +13,34 @@ const ChatElement = ({
   openChat: () => void;
 }) => {
   return (
-    <button className="bg-stone-900" onClick={(e) => openChat()}>
+    <button
+      className="bg-stone-900 text-left p-2 mx-2 mt-2"
+      onClick={(e) => openChat()}
+    >
       {name}
     </button>
   );
 };
 
-export const ChatList = ({ name }: { name: string }) => {
+export const ChatList = ({
+  name,
+  openChat,
+  openUsersList,
+}: {
+  name: string;
+  openChat: (index: string) => void;
+  openUsersList: () => void;
+}) => {
   const [chats, setChats] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [chatIds, setChatIds] = useState<string[]>([]);
 
-  const openChat = (index: number) => {
-    console.log(chatIds[index]);
-  };
+  const user = new User(name);
 
   useEffect(() => {
     const getChats = async () => {
-      const userChats = await getDoc(doc(db, "users", name));
-
-      let names: string[] = [];
-      for (let i = 0; i < userChats.data()?.chats.length; i++) {
-        const chatData = await getDoc(
-          doc(db, "chats", userChats.data()?.chats[i])
-        );
-
-        names.push(chatData.data()?.chatName);
-      }
-
-      setChats(names);
-      setChatIds(userChats.data()?.chats);
+      setChats((await user.getChats()).map((chat) => chat.chatName));
+      setChatIds(await user.getChatsIds());
 
       setIsLoading(false);
     };
@@ -53,10 +53,22 @@ export const ChatList = ({ name }: { name: string }) => {
   }
 
   return (
-    <>
-      {chats.map((chat, index) => (
-        <ChatElement key={index} name={chat} openChat={() => openChat(index)} />
-      ))}
-    </>
+    <div className="flex flex-col grow justify-between">
+      <div className="flex flex-col overflow-scroll gap-1">
+        {chats.map((chat, index) => (
+          <ChatElement
+            key={index}
+            name={chat}
+            openChat={() => openChat(chatIds[index])}
+          />
+        ))}
+      </div>
+      <button
+        className="bg-stone-700 text-left p-2 m-2"
+        onClick={(e) => openUsersList()}
+      >
+        Find Users
+      </button>
+    </div>
   );
 };

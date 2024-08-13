@@ -1,15 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import { Chat, ChatData, Message } from "./Chat";
+import { Chat, ChatData, Message } from "./Interfaces";
 import { MessagesRenderer } from "./MessageRenderer";
 import { InputField } from "./InputField";
 import { IoIosArrowBack } from "react-icons/io";
 import { ChatList } from "./ChatList";
+import UsersList from "./UsersList";
 
 export default function App() {
   const [name, setName] = useState<string>("test_user_1");
   const [activeView, setActiveView] = useState<string>("Chat");
+  const [chatID, setChatID] = useState<string>("chat");
 
   useEffect(() => {
     document.addEventListener("keydown", (e) => {
@@ -22,11 +24,20 @@ export default function App() {
   const view = () => {
     switch (activeView) {
       case "ChatList":
-        return <ChatList name={name} />;
+        return (
+          <ChatList
+            name={name}
+            openChat={(ID: string) => {
+              setChatID(ID);
+              setActiveView("Chat");
+            }}
+            openUsersList={() => setActiveView("UsersList")}
+          />
+        );
       case "Chat":
         return (
           <ChatPage
-            chatID="chat"
+            chatID={chatID}
             name={name}
             openChatsList={() => setActiveView("ChatList")}
           />
@@ -42,6 +53,21 @@ export default function App() {
             />
             <button onClick={() => setActiveView("Chat")}>Log In</button>
           </>
+        );
+      case "UsersList":
+        return (
+          <UsersList
+            name={name}
+            openChat={(user) => {
+              const createChat = async () => {
+                const chatId = await new Chat(name).create(user);
+                setChatID(chatId);
+                setActiveView("Chat");
+              };
+
+              createChat();
+            }}
+          />
         );
     }
   };
@@ -59,45 +85,20 @@ const ChatPage = ({
   chatID: string;
 }) => {
   const [chatMessages, setChatMessages] = useState<Message[]>([]);
+  const [chatName, setChatName] = useState("");
 
-  const chat = new Chat(name, chatID); // userID, chatID
-  const [displayBubbles, setDisplayBubbles] = useState(false);
-  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-
-  const debouceHideBubble = () => {
-    if (debounceTimeout.current) {
-      clearTimeout(debounceTimeout.current);
-    }
-
-    debounceTimeout.current = setTimeout(() => {
-      setDisplayBubbles(false);
-    }, 3000);
-  };
+  const chat = new Chat(name, chatID);
 
   useEffect(() => {
-    chat.subscribe((doc: ChatData) => {
+    chat.open((doc: ChatData) => {
       setChatMessages(doc.messages);
-
-      console.log("fuck");
-
-      const keys = Object.keys(doc.writing);
-
-      for (let key of keys) {
-        if (key !== name) {
-          if (Date.now() - doc.writing[key] < 5000) {
-            setDisplayBubbles(true);
-            debouceHideBubble();
-          }
-        }
-      }
+      setChatName(doc.chatName);
     });
-  }, []);
 
-  useEffect(() => {
-    if (chatMessages.at(-1)?.author !== name) {
-      setDisplayBubbles(false);
-    }
-  }, [chatMessages.length]);
+    return () => {
+      chat.close();
+    };
+  }, []);
 
   return (
     <div className="flex w-screen h-screen flex-col">
@@ -108,13 +109,9 @@ const ChatPage = ({
         >
           <IoIosArrowBack />
         </button>
-        <p className="flex-grow">Chat Name</p>
+        <p className="flex-grow appear">{chatName}</p>
       </div>
-      <MessagesRenderer
-        messages={chatMessages}
-        myName={name}
-        writing={displayBubbles}
-      />
+      <MessagesRenderer messages={chatMessages} myName={name} />
       <InputField chat={chat} />
     </div>
   );
