@@ -4,6 +4,7 @@ import { doc, getDoc, onSnapshot, setDoc, updateDoc } from "firebase/firestore";
 export type ChatData = {
   chatName: string;
   messages: Message[];
+  writing: { [key: string]: number };
 };
 
 export type Message = {
@@ -26,7 +27,7 @@ export class Chat {
     const chat = await getDoc(ref);
 
     if (chat.exists() === false) {
-      return new Error("chat doen't exist");
+      return new Error("chat doesn't exist");
     }
 
     this.unsub = onSnapshot(ref, (doc: any) => {
@@ -51,6 +52,19 @@ export class Chat {
         ...data!.data()?.messages,
         { author: this.userID, content: msg },
       ],
+    });
+  }
+
+  public async write(isWriting = true) {
+    const ref = doc(db, "chats", this.chatID);
+    console.log("write");
+
+    const payload = isWriting ? Date.now() : Infinity;
+
+    await updateDoc(ref, {
+      writing: {
+        [this.userID]: payload,
+      },
     });
   }
 }

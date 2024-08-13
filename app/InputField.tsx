@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Chat } from "./Chat";
 import { IoIosSend } from "react-icons/io";
+import { throttle } from "lodash";
 
 const MAXHEIGHT = 96; // Max height in pixels (24px * 4)
 
@@ -8,9 +9,14 @@ export const InputField = ({ chat }: { chat: Chat }) => {
   const [message, setMessage] = useState<string>("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  const handleChange = () => {
+    chat.write(message.trim() != "");
+  };
+  const throttleOnWrite = useCallback(throttle(handleChange, 800), []);
+
   const send = () => {
     if (message.trim()) {
-      chat.send(message);
+      chat.send(message.trim());
       setMessage("");
     }
   };
@@ -18,12 +24,13 @@ export const InputField = ({ chat }: { chat: Chat }) => {
   // Auto-expand the textarea as the user types
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto"; // Reset height
+      textareaRef.current.style.height = "auto";
       textareaRef.current.style.height = `${Math.min(
         textareaRef.current.scrollHeight,
         MAXHEIGHT
-      )}px`; // Set height based on scroll height
+      )}px`;
     }
+    throttleOnWrite();
   }, [message]);
 
   return (

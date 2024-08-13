@@ -18,7 +18,7 @@ body {
   }
 }
 
-.showWindow {
+.appear {
   animation-name: appear;
   animation-fill-mode: forwards;
   animation-duration: 0.2s;

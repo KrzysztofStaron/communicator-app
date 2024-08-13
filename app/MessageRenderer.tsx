@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import { Message } from "./Chat";
+import "./typing.css";
 
 export const MessagesRenderer = ({
   messages,
   myName,
+  writing,
 }: {
   messages: Message[];
   myName: string;
+  writing: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -15,6 +18,23 @@ export const MessagesRenderer = ({
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [messages]);
+
+  useEffect(() => {
+    if (writing === false) {
+      return;
+    }
+
+    if (containerRef.current) {
+      const scrollHeight = containerRef.current.scrollHeight;
+      const scrollTop = containerRef.current.scrollTop;
+      const clientHeight = containerRef.current.clientHeight;
+      const distanceToBottom = scrollHeight - scrollTop - clientHeight;
+
+      if (distanceToBottom < 40) {
+        containerRef.current.scrollTop = scrollHeight;
+      }
+    }
+  }, [writing]);
 
   return (
     <div
@@ -30,7 +50,7 @@ export const MessagesRenderer = ({
         return (
           <div
             key={i}
-            className={`flex showWindow ${
+            className={`flex appear ${
               isMe ? "justify-end" : "justify-start"
             } break-words`}
           >
@@ -40,7 +60,7 @@ export const MessagesRenderer = ({
                   ? `bg-blue-600 rounded-l-3xl ml-20 ${
                       topNeighbour ? "rounded-tr-md" : "rounded-tr-3xl"
                     } ${bottomNeighbour ? "rounded-br-md" : "rounded-br-3xl"}`
-                  : `bg-gray-500 rounded-r-3xl mr-20 ${
+                  : `bg-stone-600 rounded-r-3xl mr-20 ${
                       topNeighbour ? "rounded-tl-md" : "rounded-tl-3xl"
                     } ${bottomNeighbour ? "rounded-bl-md" : "rounded-bl-3xl"}`
               }`}
@@ -50,6 +70,15 @@ export const MessagesRenderer = ({
           </div>
         );
       })}
+      {writing ? (
+        <div
+          className={`flex appear break-words py-2 min-w-8 px-4 rounded-2xl bg-stone-600 w-min mt-1`}
+        >
+          <span className="circle scaling"></span>
+          <span className="circle scaling"></span>
+          <span className="circle scaling"></span>
+        </div>
+      ) : null}
     </div>
   );
 };
