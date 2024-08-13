@@ -28,8 +28,8 @@ export const InputField = ({ chat }: { chat: Chat }) => {
   }, [message]);
 
   return (
-    <div className="ml-2 mb-2 flex items-end">
-      <div className="flex-grow bg-stone-900 rounded-2xl min-h-10 flex items-center py-2">
+    <div className="mx-2 mb-2 flex items-end bg-stone-900 rounded-2xl">
+      <div className="flex-grow min-h-10 flex items-center py-2 pl-1">
         <textarea
           ref={textareaRef}
           className="bg-transparent focus:outline-none resize-none rounded-xl px-2 w-full"

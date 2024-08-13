@@ -39,7 +39,13 @@ export const ChatList = ({
 
   useEffect(() => {
     const getChats = async () => {
-      setChats((await user.getChats()).map((chat) => chat.chatName));
+      setChats(
+        (await user.getChats()).map((chat) => {
+          return chat.chatName
+            ? chat.chatName
+            : chat.members.filter((m) => m != name).join(", ");
+        })
+      );
       setChatIds(await user.getChatsIds());
 
       setIsLoading(false);

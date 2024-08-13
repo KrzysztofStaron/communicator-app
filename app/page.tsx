@@ -92,7 +92,7 @@ const ChatPage = ({
   useEffect(() => {
     chat.open((doc: ChatData) => {
       setChatMessages(doc.messages);
-      setChatName(doc.chatName);
+      setChatName(chat.getName());
     });
 
     return () => {

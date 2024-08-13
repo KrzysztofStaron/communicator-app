@@ -12,6 +12,7 @@ import {
 
 export type ChatData = {
   chatName: string;
+  members: string[];
   messages: Message[];
 };
 
@@ -24,6 +25,7 @@ export class Chat {
   userID: string;
   chatID: string;
   unsub: (() => void) | undefined;
+  chatData: ChatData | undefined;
 
   constructor(userID: string, chatId = "") {
     this.userID = userID;
@@ -35,13 +37,25 @@ export class Chat {
     const chat = await getDoc(ref);
 
     if (chat.exists() === false) {
-      return new Error("chat doesn't exist");
+      throw new Error("chat doesn't exist");
     }
 
     this.unsub = onSnapshot(ref, (doc: any) => {
       const data = doc.data();
+      this.chatData = data;
+
       callback(data);
     });
+  }
+
+  public getName() {
+    if (!this.chatData) {
+      throw new Error("open the chat first");
+    }
+
+    return this.chatData.chatName
+      ? this.chatData.chatName
+      : this.chatData.members.filter((m) => m != this.userID).join(", ");
   }
 
   public async create(user: string) {
@@ -61,7 +75,8 @@ export class Chat {
     const ref = collection(db, "chats");
 
     const newChat = await addDoc(ref, {
-      chatName: user,
+      chatName: "",
+      members: [this.userID, user],
       messages: [],
     });
 
