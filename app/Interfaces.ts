@@ -78,8 +78,6 @@ export class Chat {
   }
 
   public async create(user: string) {
-    console.log(user);
-
     const myChats = await new User(user).getChatsIds();
     const theirChats = await new User(this.userID).getChatsIds();
 
@@ -114,8 +112,6 @@ export class Chat {
 
   public async close() {
     if (this.unsub) {
-      console.log("unsub");
-
       this.unsub();
     }
   }

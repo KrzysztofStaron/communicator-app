@@ -248,10 +248,6 @@ const App = () => {
     );
   }, [email, password]);
 
-  useEffect(() => {
-    console.log(valid);
-  }, [valid]);
-
   return (
     <div className="flex items-center justify-center w-full h-screen flex-col">
       <div className="relative top-10">

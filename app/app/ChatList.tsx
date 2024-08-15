@@ -24,11 +24,11 @@ const ChatElement = ({
 };
 
 export const ChatList = ({
-  name,
+  userId,
   openChat,
   openUsersList,
 }: {
-  name: string;
+  userId: string;
   openChat: (index: string) => void;
   openUsersList: () => void;
 }) => {
@@ -37,21 +37,19 @@ export const ChatList = ({
   const [chatIds, setChatIds] = useStorage<string[]>("chatIds", []);
   const [email, setEmail] = useStorage<string>("email");
 
-  const user = new User(name);
+  const user = new User(userId);
 
   useEffect(() => {
-    console.log("chat list");
     const getChats = async () => {
       const ids = await user.getChatsIds();
 
       let newChats = [];
       for (let i = 0; i < ids.length; i++) {
-        const newChat = new Chat(name, ids[i]);
+        const newChat = new Chat(userId, ids[i]);
         newChats.push(await newChat.getName());
       }
 
       setChats(newChats);
-      console.log("db chats");
 
       setChatIds(await user.getChatsIds());
       setEmail(await user.getName());

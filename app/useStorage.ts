@@ -10,7 +10,7 @@ export const useStorage = <T>(
     const item = localStorage.getItem(id);
     if (item !== null) {
       setState(JSON.parse(item));
-      console.log("Storage: ", item);
+      console.log("Storage: ", id);
     }
   }, []);
 
