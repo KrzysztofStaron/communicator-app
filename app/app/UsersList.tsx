@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { DataHelper, User, UserData } from "../Interfaces";
 import { IoArrowForward } from "react-icons/io5";
 import Spinner from "../spinner/spinner";
-import { useStorage } from "../useStorage";
+import { useCashe } from "../useCashe";
 
 const UsersList = ({
   openChat,
@@ -13,7 +13,7 @@ const UsersList = ({
   name: string;
   openChatList: () => void;
 }) => {
-  const [users, setUsers] = useStorage<UserData[]>("userList_users", []);
+  const [users, setUsers] = useCashe<UserData[]>("userList_users", []);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

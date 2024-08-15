@@ -1,7 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Chat, ChatData, Message } from "../Interfaces";
-import { useStorage } from "../useStorage";
-import { IoIosArrowBack } from "react-icons/io";
+import { useCashe } from "../useCashe";
+import { IoIosArrowBack, IoMdSettings } from "react-icons/io";
 import { InputField } from "./InputField";
 import { MessagesRenderer } from "./MessageRenderer";
 
@@ -14,8 +14,9 @@ export const ChatPage = ({
   openChatsList: () => void;
   chatID: string;
 }) => {
-  const [chatMessages, setChatMessages] = useStorage<Message[]>(chatID, []);
-  const [chatName, setChatName] = useStorage(`${chatID}_name`, "");
+  const [chatMessages, setChatMessages] = useCashe<Message[]>(chatID, []);
+  const [chatName, setChatName] = useCashe(`${chatID}_name`, "");
+  const [displaySettings, setDisplaySettings] = useState(false);
 
   const chat = new Chat(userId, chatID);
 
@@ -44,6 +45,9 @@ export const ChatPage = ({
         {chatName === "" ? null : (
           <p className="flex-grow appear">{chatName}</p>
         )}
+        <button className="flex items-center justify-center hover:animate-spin">
+          <IoMdSettings size={22} />
+        </button>
       </div>
       <MessagesRenderer messages={chatMessages!} myId={userId} />
       <InputField chat={chat} />

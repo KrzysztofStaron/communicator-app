@@ -1,6 +1,6 @@
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 
-export const useStorage = <T>(
+export const useCashe = <T>(
   id: string,
   defaultValue?: T
 ): [T | undefined, Dispatch<SetStateAction<T | undefined>>] => {

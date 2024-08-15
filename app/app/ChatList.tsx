@@ -4,7 +4,7 @@ import "../globals.css";
 import { Chat, User } from "../Interfaces";
 import Spinner from "../spinner/spinner";
 import { FaSearch } from "react-icons/fa";
-import { useStorage } from "../useStorage";
+import { useCashe } from "../useCashe";
 
 const ChatElement = ({
   name,
@@ -32,10 +32,10 @@ export const ChatList = ({
   openChat: (index: string) => void;
   openUsersList: () => void;
 }) => {
-  const [chats, setChats] = useStorage<string[]>("chats", []);
+  const [chats, setChats] = useCashe<string[]>("chats", []);
   const [isLoading, setIsLoading] = useState(true);
-  const [chatIds, setChatIds] = useStorage<string[]>("chatIds", []);
-  const [email, setEmail] = useStorage<string>("email");
+  const [chatIds, setChatIds] = useCashe<string[]>("chatIds", []);
+  const [email, setEmail] = useCashe<string>("email");
 
   const user = new User(userId);
 
