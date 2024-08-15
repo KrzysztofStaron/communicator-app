@@ -65,7 +65,9 @@ const CreateAccount = ({
     createUserWithEmailAndPassword(auth, email, password)
       .then((userCredential: UserCredential) => {
         User.createUser(userCredential.user.uid, email).then(() => {
-          window.location.href = "/app";
+          if (typeof window !== "undefined") {
+            window.location.href = "/app";
+          }
         });
       })
       .catch((error: any) => {
@@ -146,7 +148,9 @@ const LogIn = ({
       .then((userCredential: any) => {
         // Signed in
         const user = userCredential.user;
-        window.location.href = "/app";
+        if (typeof window !== "undefined") {
+          window.location.href = "/app";
+        }
       })
       .catch((error: any) => {
         const errorMessage = error.message;
@@ -202,7 +206,9 @@ const App = () => {
 
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      window.location.href = "/app";
+      if (typeof window !== "undefined") {
+        window.location.href = "/app";
+      }
     }
   });
 
@@ -218,7 +224,9 @@ const App = () => {
             await User.createUser(user.uid, user.email || "");
           }
 
-          window.location.href = "/app";
+          if (typeof window !== "undefined") {
+            window.location.href = "/app";
+          }
         };
         handle();
       })

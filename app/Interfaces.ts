@@ -41,8 +41,8 @@ export class Chat {
     const ref = doc(db, "chats", this.chatID);
     const chat = await getDoc(ref);
 
-    if (chat.exists() === false) {
-      throw new Error("chat doesn't exist");
+    if (!chat.exists()) {
+      throw new Error("Chat doesn't exist");
     }
 
     this.unsub = onSnapshot(ref, (doc: any) => {
@@ -54,19 +54,22 @@ export class Chat {
   }
 
   public async getName() {
-    if (!this.chatData) {
-      this.chatData = (
-        await getDoc(doc(db, "chats", this.chatID))
-      ).data() as ChatData;
+    if (!this.chatID) {
+      throw new Error("chatID not set");
     }
-    let membersEmails: string[] = [];
+    if (!this.chatData) {
+      const chatDoc = await getDoc(doc(db, "chats", this.chatID));
+      this.chatData = chatDoc.data() as ChatData;
+    }
+    const membersEmails: string[] = [];
     this.chatData.members = this.chatData.members.filter(
-      (m) => m != this.userID
+      (m) => m !== this.userID
     );
 
     for (let i = 0; i < this.chatData.members.length; i++) {
-      const user = await new User(this.chatData.members[i]).getName();
-      membersEmails.push(user);
+      const user = new User(this.chatData.members[i]);
+      const userEmail = await user.getName();
+      membersEmails.push(userEmail);
     }
 
     return this.chatData.chatName
@@ -99,10 +102,10 @@ export class Chat {
     const mineChats = await new User(this.userID).getChatsIds();
     const connectedChats = await new User(user).getChatsIds();
 
-    updateDoc(doc(db, "users", this.userID), {
+    await updateDoc(doc(db, "users", this.userID), {
       chats: [...mineChats, newChat.id],
     });
-    updateDoc(doc(db, "users", user), {
+    await updateDoc(doc(db, "users", user), {
       chats: [...connectedChats, newChat.id],
     });
 
@@ -111,7 +114,7 @@ export class Chat {
 
   public async close() {
     if (this.unsub) {
-      console.log("uns sub");
+      console.log("unsub");
 
       this.unsub();
     }
@@ -124,7 +127,7 @@ export class Chat {
 
     await updateDoc(ref, {
       messages: [
-        ...data!.data()?.messages,
+        ...(data!.data()?.messages || []),
         { author: this.userID, content: msg },
       ],
     });

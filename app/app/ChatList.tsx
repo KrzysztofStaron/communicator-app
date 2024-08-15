@@ -34,7 +34,7 @@ export const ChatList = ({
 }) => {
   const [chats, setChats] = useStorage<string[]>("chats", []);
   const [isLoading, setIsLoading] = useState(true);
-  const [chatIds, setChatIds] = useState<string[]>([]);
+  const [chatIds, setChatIds] = useStorage<string[]>("chatIds", []);
   const [email, setEmail] = useStorage<string>("email");
 
   const user = new User(name);
@@ -42,16 +42,15 @@ export const ChatList = ({
   useEffect(() => {
     console.log("chat list");
     const getChats = async () => {
-      setChats(
-        await Promise.all(
-          (
-            await user.getChatsIds()
-          ).map(async (chat) => {
-            const newChat = new Chat(name, chat);
-            return await newChat.getName();
-          })
-        )
-      );
+      const ids = await user.getChatsIds();
+
+      let newChats = [];
+      for (let i = 0; i < ids.length; i++) {
+        const newChat = new Chat(name, ids[i]);
+        newChats.push(await newChat.getName());
+      }
+
+      setChats(newChats);
       console.log("db chats");
 
       setChatIds(await user.getChatsIds());
@@ -59,7 +58,6 @@ export const ChatList = ({
 
       setIsLoading(false);
     };
-
     getChats();
   }, []);
 
@@ -70,13 +68,15 @@ export const ChatList = ({
       </div>
       <div className="flex flex-col grow justify-between">
         <div className="flex flex-col overflow-scroll gap-1">
-          {chats?.map((chat, index) => (
-            <ChatElement
-              key={index}
-              name={chat}
-              openChat={() => openChat(chatIds[index])}
-            />
-          ))}
+          {chatIds
+            ? chats?.map((chat, index) => (
+                <ChatElement
+                  key={index}
+                  name={chat}
+                  openChat={() => openChat(chatIds[index])}
+                />
+              ))
+            : null}
           {isLoading ? (
             <div className="flex w-full justify-center">
               <Spinner />

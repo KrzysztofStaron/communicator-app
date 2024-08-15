@@ -10,6 +10,7 @@ import UsersList from "./UsersList";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import Spinner from "../spinner/spinner";
+import { useStorage } from "../useStorage";
 
 export default function App() {
   const [name, setName] = useState<string>("test_user_1");
@@ -22,7 +23,9 @@ export default function App() {
       setAuthenticated(true);
       setName(user.uid);
     } else {
-      window.location.href = "/";
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
     }
   });
 
@@ -106,8 +109,8 @@ const ChatPage = ({
   openChatsList: () => void;
   chatID: string;
 }) => {
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [chatName, setChatName] = useState("");
+  const [chatMessages, setChatMessages] = useStorage<Message[]>(chatID, []);
+  const [chatName, setChatName] = useStorage(`${chatID}_name`, "");
 
   const chat = new Chat(name, chatID);
 
@@ -137,7 +140,7 @@ const ChatPage = ({
           <p className="flex-grow appear">{chatName}</p>
         )}
       </div>
-      <MessagesRenderer messages={chatMessages} myName={name} />
+      <MessagesRenderer messages={chatMessages!} myName={name} />
       <InputField chat={chat} />
     </div>
   );
