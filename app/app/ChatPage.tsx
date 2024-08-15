@@ -6,24 +6,24 @@ import { InputField } from "./InputField";
 import { MessagesRenderer } from "./MessageRenderer";
 
 export const ChatPage = ({
-  name,
+  userId,
   openChatsList,
   chatID,
 }: {
-  name: string;
+  userId: string;
   openChatsList: () => void;
   chatID: string;
 }) => {
   const [chatMessages, setChatMessages] = useStorage<Message[]>(chatID, []);
   const [chatName, setChatName] = useStorage(`${chatID}_name`, "");
 
-  const chat = new Chat(name, chatID);
+  const chat = new Chat(userId, chatID);
 
   useEffect(() => {
     chat.open((doc: ChatData) => {
       setChatMessages(doc.messages);
-      chat.getName().then((name) => {
-        setChatName(name);
+      chat.getName().then((chatName) => {
+        setChatName(chatName);
       });
     });
 
@@ -45,7 +45,7 @@ export const ChatPage = ({
           <p className="flex-grow appear">{chatName}</p>
         )}
       </div>
-      <MessagesRenderer messages={chatMessages!} myName={name} />
+      <MessagesRenderer messages={chatMessages!} myId={userId} />
       <InputField chat={chat} />
     </div>
   );

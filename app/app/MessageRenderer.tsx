@@ -4,11 +4,11 @@ import "./typing.css";
 
 export const MessagesRenderer = ({
   messages,
-  myName,
+  myId,
   writing,
 }: {
   messages: Message[];
-  myName: string;
+  myId: string;
   writing?: boolean;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -42,7 +42,7 @@ export const MessagesRenderer = ({
       ref={containerRef}
     >
       {messages.map((m, i) => {
-        const isMe = m.author == myName;
+        const isMe = m.author == myId;
         const topNeighbour =
           messages[i - 1] !== undefined && messages[i - 1].author === m.author;
         const bottomNeighbour =

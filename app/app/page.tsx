@@ -52,7 +52,7 @@ export default function App() {
         return (
           <ChatPage
             chatID={chatID}
-            name={userId}
+            userId={userId}
             openChatsList={() => setActiveView("ChatList")}
           />
         );
