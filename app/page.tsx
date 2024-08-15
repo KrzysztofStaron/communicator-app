@@ -1,119 +1,284 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
-import { Chat, ChatData, Message } from "./Interfaces";
-import { MessagesRenderer } from "./app/MessageRenderer";
-import { InputField } from "./app/InputField";
-import { IoIosArrowBack } from "react-icons/io";
-import { ChatList } from "./app/ChatList";
-import UsersList from "./app/UsersList";
+import {
+  createUserWithEmailAndPassword,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  UserCredential,
+} from "firebase/auth";
+import React, { useEffect, useState } from "react";
+import { FaGoogle } from "react-icons/fa6";
+import { auth } from "./firebase";
+import { User } from "./Interfaces";
 
-export default function App() {
-  const [name, setName] = useState<string>("test_user_1");
-  const [activeView, setActiveView] = useState<string>("Chat");
-  const [chatID, setChatID] = useState<string>("chat");
+const SubmitButton = ({
+  text,
+  valid,
+  onClick,
+}: {
+  text: string;
+  valid: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <button
+      className={`justify-center w-full border-2 ${
+        valid
+          ? "bg-stone-800 border-transparent hover:bg-stone-700"
+          : "opacity-50 border-stone-900"
+      } py-1  rounded-2xl`}
+      onClick={() => {
+        valid ? onClick() : null;
+      }}
+    >
+      {text}
+    </button>
+  );
+};
+const CreateAccount = ({
+  setActiveView,
+  password,
+  setPassword,
+  email,
+  setEmail,
+  valid,
+  loginError,
+}: {
+  setActiveView: React.Dispatch<React.SetStateAction<string>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  valid: boolean;
+  loginError: string;
+}) => {
+  const [passwordCopy, setPasswordCopy] = useState("");
+  const [match, setMatch] = useState(true);
 
   useEffect(() => {
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") {
-        setActiveView("Debug");
-      }
-    });
-  }, []);
+    setMatch(password === passwordCopy);
+  }, [password, passwordCopy]);
 
-  const view = () => {
-    switch (activeView) {
-      case "ChatList":
-        return (
-          <ChatList
-            name={name}
-            openChat={(ID: string) => {
-              setChatID(ID);
-              setActiveView("Chat");
-            }}
-            openUsersList={() => setActiveView("UsersList")}
-          />
-        );
-      case "Chat":
-        return (
-          <ChatPage
-            chatID={chatID}
-            name={name}
-            openChatsList={() => setActiveView("ChatList")}
-          />
-        );
-      case "Debug":
-        return (
-          <>
-            <input
-              type="text"
-              placeholder="name"
-              className="text-black"
-              onChange={(e) => setName(e.target.value)}
-            />
-            <button onClick={() => setActiveView("Chat")}>Log In</button>
-          </>
-        );
-      case "UsersList":
-        return (
-          <UsersList
-            name={name}
-            openChat={(user) => {
-              const createChat = async () => {
-                const chatId = await new Chat(name).create(user);
-                setChatID(chatId);
-                setActiveView("Chat");
-              };
-
-              createChat();
-            }}
-            openChatList={() => setActiveView("ChatList")}
-          />
-        );
-    }
+  const handleSubmit = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential: UserCredential) => {
+        User.createUser(userCredential.user.uid, email).then(() => {
+          window.location.href = "/app";
+        });
+      })
+      .catch((error: any) => {
+        const errorMessage = error.message;
+      });
   };
 
-  return <div className="flex w-screen h-screen flex-col">{view()}</div>;
-}
-
-const ChatPage = ({
-  name,
-  openChatsList,
-  chatID,
-}: {
-  name: string;
-  openChatsList: () => void;
-  chatID: string;
-}) => {
-  const [chatMessages, setChatMessages] = useState<Message[]>([]);
-  const [chatName, setChatName] = useState("");
-
-  const chat = new Chat(name, chatID);
-
-  useEffect(() => {
-    chat.open((doc: ChatData) => {
-      setChatMessages(doc.messages);
-      setChatName(chat.getName());
-    });
-
-    return () => {
-      chat.close();
-    };
-  }, []);
-
   return (
-    <div className="flex w-screen h-screen flex-col">
-      <div className="w-full flex bg-stone-900 h-8 text-lg px-2 gap-4">
-        <button
-          onClick={() => openChatsList()}
-          className="flex items-center justify-center"
-        >
-          <IoIosArrowBack />
-        </button>
-        <p className="flex-grow appear">{chatName}</p>
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
+        <label>Email:</label>
+        <input
+          type="text"
+          className="text-white focus:outline-none bg-transparent border-b-2 border-stone-400 mb-2 placeholder:text-stone-500"
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
+          placeholder="example@email.com"
+        />
       </div>
-      <MessagesRenderer messages={chatMessages} myName={name} />
-      <InputField chat={chat} />
+      <div>
+        <label>Password:</label>
+        <div className="flex flex-col gap-2">
+          <input
+            type="password"
+            className="text-white focus:outline-none bg-transparent border-b-2 border-stone-400 placeholder:text-stone-500 p-1"
+            onChange={(e) => setPassword(e.target.value)}
+            value={password}
+            placeholder="Password"
+          />
+          <input
+            type="password"
+            className={`${
+              match ? "text-white" : "text-red-400"
+            } focus:outline-none bg-transparent border-b-2 border-stone-400 placeholder:text-stone-500 p-1`}
+            onChange={(e) => setPasswordCopy(e.target.value)}
+            value={passwordCopy}
+            placeholder="Repeat Password"
+          />
+        </div>
+      </div>
+
+      <div>
+        <SubmitButton
+          text="Create Account"
+          valid={valid && password === passwordCopy}
+          onClick={() => handleSubmit()}
+        />
+        <div
+          className={`text-sm text-blue-100 cursor-pointer hover:text-blue-300 tansition-all duration-200 ease-in-out `}
+          onClick={() => setActiveView("login")}
+        >
+          Log in instead
+        </div>
+      </div>
     </div>
   );
 };
+
+const LogIn = ({
+  setActiveView,
+  password,
+  setPassword,
+  email,
+  setEmail,
+  valid,
+  loginError,
+}: {
+  setActiveView: React.Dispatch<React.SetStateAction<string>>;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  email: string;
+  setEmail: React.Dispatch<React.SetStateAction<string>>;
+  valid: boolean;
+  loginError: string;
+}) => {
+  const handleSubmit = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential: any) => {
+        // Signed in
+        const user = userCredential.user;
+        window.location.href = "/app";
+      })
+      .catch((error: any) => {
+        const errorMessage = error.message;
+      });
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-col">
+        <label>Email:</label>
+        <input
+          type="text"
+          className="text-white focus:outline-none bg-transparent border-b-2 border-stone-400 placeholder:text-stone-500"
+          onChange={(e) => setEmail(e.target.value)}
+          value={email}
+          placeholder="example@email.com"
+        />
+      </div>
+      <div className="flex flex-col">
+        <label>Password:</label>
+        <input
+          type="password"
+          className="text-white focus:outline-none bg-transparent border-b-2 border-stone-400 p-1 placeholder:text-stone-500"
+          onChange={(e) => setPassword(e.target.value)}
+          value={password}
+          placeholder="***"
+        />
+      </div>
+      <div>
+        <SubmitButton
+          text="Log In"
+          valid={valid}
+          onClick={() => handleSubmit()}
+        />
+        <div
+          className={`text-sm text-blue-100 cursor-pointer hover:text-blue-300 tansition-all duration-200 ease-in-out `}
+          onClick={() => setActiveView("create")}
+        >
+          Create account
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const App = () => {
+  const [activeView, setActiveView] = useState("login");
+  const [valid, setValid] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const provider = new GoogleAuthProvider();
+  const [loginError, setLoginError] = useState("");
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      window.location.href = "/app";
+    }
+  });
+
+  const google = async () => {
+    signInWithPopup(auth, provider)
+      .then((result) => {
+        const handle = async () => {
+          // This gives you a Google Access Token. You can use it to access the Google API.
+          const credential = GoogleAuthProvider.credentialFromResult(result);
+          const user = result.user;
+
+          if ((await User.exists(user.uid)) === false) {
+            await User.createUser(user.uid, user.email || "");
+          }
+
+          window.location.href = "/app";
+        };
+        handle();
+      })
+      .catch((error) => {
+        const errorMessage = error.message;
+        setLoginError(errorMessage);
+
+        const email = error.customData.email;
+      });
+  };
+
+  useEffect(() => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    setValid(
+      email.trim() !== "" &&
+        password.trim() !== "" &&
+        password.length > 7 &&
+        emailRegex.test(email)
+    );
+  }, [email, password]);
+
+  useEffect(() => {
+    console.log(valid);
+  }, [valid]);
+
+  return (
+    <div className="flex items-center justify-center w-full h-screen flex-col">
+      <div className="relative top-10">
+        {activeView === "login" ? (
+          <LogIn
+            setActiveView={setActiveView}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            valid={valid}
+            loginError={loginError}
+          />
+        ) : (
+          <CreateAccount
+            setActiveView={setActiveView}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            valid={valid}
+            loginError={loginError}
+          />
+        )}
+      </div>
+
+      <button
+        className="mt-20 flex items-center gap-2 bg-white border border-gray-300 rounded-lg shadow-md max-w-xs px-6 py-2 text-sm font-medium text-gray-800 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+        onClick={() => google()}
+      >
+        <FaGoogle />
+        <span>Continue with Google</span>
+      </button>
+    </div>
+  );
+};
+
+export default App;

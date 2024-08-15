@@ -59,7 +59,7 @@ export const ChatList = ({
   return (
     <div className="flex flex-col grow justify-between">
       <div className="flex flex-col overflow-scroll gap-1">
-        {chats.map((chat, index) => (
+        {chats?.map((chat, index) => (
           <ChatElement
             key={index}
             name={chat}

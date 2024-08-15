@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { DataHelper } from "../Interfaces";
+import { DataHelper, User, UserData } from "../Interfaces";
 import { IoArrowForward } from "react-icons/io5";
 
 const UsersList = ({
@@ -11,7 +11,7 @@ const UsersList = ({
   name: string;
   openChatList: () => void;
 }) => {
-  const [users, setUsers] = useState<string[]>([]);
+  const [users, setUsers] = useState<UserData[]>([]);
 
   useEffect(() => {
     const getUsers = async () => {
@@ -29,13 +29,16 @@ const UsersList = ({
         <IoArrowForward size={24} />
       </button>
       {users.map((user, i) =>
-        name !== user ? (
+        name !== user.id ? (
           <div
             className="text-left m-2 bg-stone-800 p-2 flex justify-between items-center"
             key={i}
           >
-            <button onClick={() => openChat(user)} className="grow text-left">
-              {user}
+            <button
+              onClick={() => openChat(user.id)}
+              className="grow text-left"
+            >
+              {user.email}
             </button>
             <div className="bg-green-400 h-6 w-6 rounded-full"></div>
           </div>
