@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { DataHelper, User, UserData } from "../Interfaces";
 import { IoArrowForward } from "react-icons/io5";
+import Spinner from "../spinner/spinner";
 
 const UsersList = ({
   openChat,
@@ -20,6 +21,14 @@ const UsersList = ({
 
     getUsers();
   }, []);
+
+  if (users.length === 0) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
+  }
   return (
     <div className="flex flex-col">
       <button

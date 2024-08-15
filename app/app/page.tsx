@@ -9,6 +9,7 @@ import { ChatList } from "./ChatList";
 import UsersList from "./UsersList";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import Spinner from "../spinner/spinner";
 
 export default function App() {
   const [name, setName] = useState<string>("test_user_1");
@@ -86,7 +87,11 @@ export default function App() {
   };
 
   if (!authenticated) {
-    return <div>Loading...</div>;
+    return (
+      <div className="w-screen h-screen flex items-center justify-center">
+        <Spinner />
+      </div>
+    );
   }
 
   return <div className="flex w-screen h-screen flex-col">{view()}</div>;
@@ -128,7 +133,9 @@ const ChatPage = ({
         >
           <IoIosArrowBack />
         </button>
-        <p className="flex-grow appear">{chatName}</p>
+        {chatName === "" ? null : (
+          <p className="flex-grow appear">{chatName}</p>
+        )}
       </div>
       <MessagesRenderer messages={chatMessages} myName={name} />
       <InputField chat={chat} />

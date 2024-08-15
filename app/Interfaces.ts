@@ -55,7 +55,9 @@ export class Chat {
 
   public async getName() {
     if (!this.chatData) {
-      throw new Error("open the chat first");
+      this.chatData = (
+        await getDoc(doc(db, "chats", this.chatID))
+      ).data() as ChatData;
     }
     let membersEmails: string[] = [];
     this.chatData.members = this.chatData.members.filter(
@@ -156,7 +158,7 @@ export class User {
     return chats;
   }
 
-  public async getName() {
+  public async getName(): Promise<string> {
     if (this.email) {
       return this.email;
     }
