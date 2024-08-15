@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { DataHelper, User, UserData } from "../Interfaces";
 import { IoArrowForward } from "react-icons/io5";
 import Spinner from "../spinner/spinner";
+import { useStorage } from "../useStorage";
 
 const UsersList = ({
   openChat,
@@ -12,23 +13,18 @@ const UsersList = ({
   name: string;
   openChatList: () => void;
 }) => {
-  const [users, setUsers] = useState<UserData[]>([]);
+  const [users, setUsers] = useStorage<UserData[]>("userList_users", []);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const getUsers = async () => {
       setUsers(await DataHelper.getUsers());
+      setIsLoading(false);
     };
 
     getUsers();
   }, []);
 
-  if (users.length === 0) {
-    return (
-      <div className="w-screen h-screen flex items-center justify-center">
-        <Spinner />
-      </div>
-    );
-  }
   return (
     <div className="flex flex-col">
       <button
@@ -37,7 +33,7 @@ const UsersList = ({
       >
         <IoArrowForward size={24} />
       </button>
-      {users.map((user, i) =>
+      {users?.map((user, i) =>
         name !== user.id ? (
           <div
             className="text-left m-2 bg-stone-800 p-2 flex justify-between items-center"
@@ -53,6 +49,11 @@ const UsersList = ({
           </div>
         ) : null
       )}
+      {isLoading ? (
+        <div className="flex w-full justify-center">
+          <Spinner />
+        </div>
+      ) : null}
     </div>
   );
 };
