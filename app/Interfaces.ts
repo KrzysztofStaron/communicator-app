@@ -216,6 +216,11 @@ export class User {
     this.email = "";
   }
 
+  public async getProfile() {
+    const userDoc = await getDoc(doc(db, "users", this.userID));
+    return userDoc.data()?.profile;
+  }
+
   public async saveProfile(profile: string) {
     const ref = doc(db, "users", this.userID);
 

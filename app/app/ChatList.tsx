@@ -8,6 +8,7 @@ import { useCashe } from "../useCashe";
 import { IoMdSettings } from "react-icons/io";
 import { HexColorPicker } from "react-colorful";
 import { debounce } from "lodash";
+import { auth } from "../firebase";
 
 const ChatElement = ({
   name,
@@ -66,6 +67,7 @@ export const ChatList = ({
 
       setChatIds(await user.getChatsIds());
       setEmail(await user.getName());
+      setColor(await user.getProfile());
 
       setIsLoading(false);
     };
@@ -98,6 +100,14 @@ export const ChatList = ({
             <div className="flex justify-center">
               <HexColorPicker color={color} onChange={setColor} />
             </div>
+            <button
+              onClick={(e) => {
+                auth.signOut();
+                window.location.href = "/";
+              }}
+            >
+              Sign Out
+            </button>
           </div>
         ) : (
           <>
