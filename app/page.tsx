@@ -216,10 +216,9 @@ const App = () => {
 
           if ((await User.exists(user.uid)) === false) {
             await User.createUser(user.uid, user.email || "");
-
-            if (typeof window !== "undefined") {
-              window.location.href = "/app";
-            }
+          }
+          if (typeof window !== "undefined") {
+            window.location.href = "/app";
           }
         };
         handle();
