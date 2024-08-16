@@ -64,8 +64,10 @@ const UsersList = ({
           >
             <button
               onClick={(e) => {
-                opening ? null : openChat(user.id);
-                setOpening(true);
+                if (opening === false) {
+                  setOpening(true);
+                  openChat(user.id);
+                }
               }}
               className="grow text-left"
             >
