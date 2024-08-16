@@ -1,15 +1,17 @@
 import { useEffect, useRef } from "react";
-import { Message } from "../Interfaces";
+import { Message, Theme, themes } from "../Interfaces";
 import "./typing.css";
 
 export const MessagesRenderer = ({
   messages,
   myId,
   writing,
+  theme,
 }: {
   messages: Message[];
   myId: string;
   writing?: boolean;
+  theme: Theme;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -57,10 +59,10 @@ export const MessagesRenderer = ({
             <div
               className={`py-2 min-w-8 px-4 ${
                 isMe
-                  ? `bg-blue-600 rounded-l-3xl ml-20 ${
+                  ? `${theme.primary} rounded-l-3xl ml-20 ${
                       topNeighbour ? "rounded-tr-md" : "rounded-tr-3xl"
                     } ${bottomNeighbour ? "rounded-br-md" : "rounded-br-3xl"}`
-                  : `bg-stone-600 rounded-r-3xl mr-20 ${
+                  : `${theme.secondary} rounded-r-3xl mr-20 ${
                       topNeighbour ? "rounded-tl-md" : "rounded-tl-3xl"
                     } ${bottomNeighbour ? "rounded-bl-md" : "rounded-bl-3xl"}`
               }`}

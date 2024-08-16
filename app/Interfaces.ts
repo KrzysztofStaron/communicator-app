@@ -6,13 +6,22 @@ import {
   getDoc,
   getDocs,
   onSnapshot,
+  query,
   setDoc,
   updateDoc,
+  where,
+  orderBy, // Add this line
 } from "firebase/firestore";
 
+export type Theme = {
+  name: string;
+  primary: string;
+  secondary: string;
+};
+
 export type ChatData = {
-  chatName: string;
   members: string[];
+  settings: ChatSettings;
   messages: Message[];
 };
 
@@ -23,8 +32,37 @@ export type Message = {
 
 export type UserData = {
   email: string;
+  profile: string;
   id: string;
 };
+
+export type ChatSettings = {
+  chatName: string;
+  theme: number;
+};
+
+export const themes: Theme[] = [
+  {
+    name: "standart",
+    primary: "bg-blue-600",
+    secondary: "bg-stone-600",
+  },
+  {
+    name: "dark",
+    primary: "bg-gray-900",
+    secondary: "bg-stone-800",
+  },
+  {
+    name: "love",
+    primary: "bg-pink-700",
+    secondary: "bg-rose-800",
+  },
+  {
+    name: "citrus",
+    primary: "bg-yellow-800",
+    secondary: "bg-green-800",
+  },
+];
 
 export class Chat {
   userID: string;
@@ -35,6 +73,29 @@ export class Chat {
   constructor(userID: string, chatId = "") {
     this.userID = userID;
     this.chatID = chatId;
+  }
+
+  public async setTheme(theme: number) {
+    const ref = doc(db, "chats", this.chatID);
+
+    await updateDoc(ref, { settings: { theme: theme } });
+  }
+
+  public async getSettings() {
+    const ref = doc(db, "chats", this.chatID);
+    const chat = await getDoc(ref);
+
+    if (!chat.exists()) {
+      throw new Error("Chat doesn't exist");
+    }
+
+    return chat.data() as ChatSettings;
+  }
+
+  public async saveSettings(set: ChatSettings | any) {
+    const ref = doc(db, "chats", this.chatID);
+
+    await updateDoc(ref, { settings: set });
   }
 
   public async open(callback: (chatData: ChatData) => void) {
@@ -53,6 +114,25 @@ export class Chat {
     });
   }
 
+  public async getEmail() {
+    if (!this.chatID) {
+      throw new Error("chatID not set");
+    }
+    if (!this.chatData) {
+      const chatDoc = await getDoc(doc(db, "chats", this.chatID));
+      this.chatData = chatDoc.data() as ChatData;
+    }
+    const membersEmails: string[] = [];
+    const members = this.chatData.members.filter((m) => m !== this.userID);
+    for (const memberID of members) {
+      const user = new User(memberID);
+      const userEmail = await user.getName();
+      membersEmails.push(userEmail);
+    }
+
+    return membersEmails.join(", ");
+  }
+
   public async getName() {
     if (!this.chatID) {
       throw new Error("chatID not set");
@@ -62,18 +142,16 @@ export class Chat {
       this.chatData = chatDoc.data() as ChatData;
     }
     const membersEmails: string[] = [];
-    this.chatData.members = this.chatData.members.filter(
-      (m) => m !== this.userID
-    );
+    const members = this.chatData.members.filter((m) => m !== this.userID);
 
-    for (let i = 0; i < this.chatData.members.length; i++) {
-      const user = new User(this.chatData.members[i]);
+    for (let i = 0; i < members.length; i++) {
+      const user = new User(members[i]);
       const userEmail = await user.getName();
       membersEmails.push(userEmail);
     }
 
-    return this.chatData.chatName
-      ? this.chatData.chatName
+    return this.chatData.settings?.chatName
+      ? this.chatData.settings?.chatName
       : membersEmails.join(", ");
   }
 
@@ -92,9 +170,8 @@ export class Chat {
     const ref = collection(db, "chats");
 
     const newChat = await addDoc(ref, {
-      chatName: "",
+      ...DataHelper.emptyChatData(),
       members: [this.userID, user],
-      messages: [],
     });
 
     const mineChats = await new User(this.userID).getChatsIds();
@@ -139,6 +216,12 @@ export class User {
     this.email = "";
   }
 
+  public async saveProfile(profile: string) {
+    const ref = doc(db, "users", this.userID);
+
+    await updateDoc(ref, { profile: profile });
+  }
+
   public async getChatsIds(): Promise<string[]> {
     const userChats = await getDoc(doc(db, "users", this.userID));
     return userChats.data()?.chats ?? [];
@@ -169,7 +252,11 @@ export class User {
   }
 
   static async createUser(userID: string, email: string) {
-    await setDoc(doc(db, "users", userID), { email: email, chats: [] });
+    await setDoc(doc(db, "users", userID), {
+      email: email,
+      chats: [],
+      profile: "",
+    });
   }
 
   static async exists(userID: string) {
@@ -179,12 +266,29 @@ export class User {
 }
 
 export class DataHelper {
-  static async getUsers() {
-    const users = await getDocs(collection(db, "users"));
-    return users.docs.map((doc) => ({ id: doc.id, email: doc.data().email }));
+  static async getUsers(queryText: string) {
+    const ref = collection(db, "users");
+    const q = query(ref, where("email", ">=", queryText), orderBy("email")); // Add orderBy("email") to sort the results
+    const users = await getDocs(q);
+    return users.docs.map((doc) => ({
+      id: doc.id,
+      email: doc.data().email,
+      profile: doc.data().profile,
+    }));
   }
 
-  static async startChat() {
-    getDoc;
+  static emptyChatSettings(): ChatSettings {
+    return {
+      chatName: "",
+      theme: 0,
+    };
+  }
+
+  static emptyChatData(): ChatData {
+    return {
+      members: [],
+      settings: DataHelper.emptyChatSettings(),
+      messages: [],
+    };
   }
 }

@@ -3,6 +3,8 @@ import { DataHelper, User, UserData } from "../Interfaces";
 import { IoArrowForward } from "react-icons/io5";
 import Spinner from "../spinner/spinner";
 import { useCashe } from "../useCashe";
+import { FaSearch } from "react-icons/fa";
+import { debounce } from "lodash";
 
 const UsersList = ({
   openChat,
@@ -15,15 +17,26 @@ const UsersList = ({
 }) => {
   const [users, setUsers] = useCashe<UserData[]>("userList_users", []);
   const [isLoading, setIsLoading] = useState(true);
+  const [queryText, setQueryText] = useState("");
 
   useEffect(() => {
-    const getUsers = async () => {
-      setUsers(await DataHelper.getUsers());
+    DataHelper.getUsers(queryText).then((users) => {
+      setUsers(users);
       setIsLoading(false);
-    };
-
-    getUsers();
+    });
   }, []);
+
+  const debouncedGetUsers = debounce(() => {
+    DataHelper.getUsers(queryText).then((users) => {
+      console.log(users);
+
+      setUsers(users);
+    });
+  }, 500);
+
+  useEffect(() => {
+    debouncedGetUsers();
+  }, [queryText]);
 
   return (
     <div className="flex flex-col">
@@ -33,6 +46,15 @@ const UsersList = ({
       >
         <IoArrowForward size={24} />
       </button>
+      <div className="flex justify-center">
+        <input
+          type="text"
+          className="bg-transparent border-b-2 w-8/12 focus:outline-none"
+          value={queryText}
+          onChange={(e) => setQueryText(e.target.value)}
+        />
+        <FaSearch />
+      </div>
       {users?.map((user, i) =>
         name !== user.id ? (
           <div
@@ -45,7 +67,10 @@ const UsersList = ({
             >
               {user.email}
             </button>
-            <div className="bg-green-400 h-6 w-6 rounded-full"></div>
+            <div
+              className="h-6 w-6 rounded-full border-2"
+              style={{ backgroundColor: user.profile }}
+            ></div>
           </div>
         ) : null
       )}

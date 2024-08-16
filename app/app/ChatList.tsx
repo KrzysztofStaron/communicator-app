@@ -5,6 +5,9 @@ import { Chat, User } from "../Interfaces";
 import Spinner from "../spinner/spinner";
 import { FaSearch } from "react-icons/fa";
 import { useCashe } from "../useCashe";
+import { IoMdSettings } from "react-icons/io";
+import { HexColorPicker } from "react-colorful";
+import { debounce } from "lodash";
 
 const ChatElement = ({
   name,
@@ -36,8 +39,18 @@ export const ChatList = ({
   const [isLoading, setIsLoading] = useState(true);
   const [chatIds, setChatIds] = useCashe<string[]>("chatIds", []);
   const [email, setEmail] = useCashe<string>("email");
+  const [displayProfileSettings, setDisplayProfileSettings] = useState(false);
+  const [color, setColor] = useState("#aabbcc");
 
   const user = new User(userId);
+
+  const colorDebounce = debounce(() => {
+    user.saveProfile(color);
+  }, 300);
+
+  useEffect(() => {
+    colorDebounce();
+  }, [color]);
 
   useEffect(() => {
     const getChats = async () => {
@@ -63,34 +76,59 @@ export const ChatList = ({
     <>
       <div className="w-full flex bg-stone-900 h-8 text-lg px-2 gap-4">
         <p className="flex-grow appear">{`${email}' chats:`}</p>
+        <button
+          className="flex items-center justify-center"
+          onClick={(e) => {
+            setDisplayProfileSettings((prev) => !prev);
+          }}
+        >
+          <IoMdSettings size={22} />
+        </button>
       </div>
       <div className="flex flex-col grow justify-between">
-        <div className="flex flex-col overflow-scroll gap-1">
-          {chatIds
-            ? chats?.map((chat, index) => (
-                <ChatElement
-                  key={index}
-                  name={chat}
-                  openChat={() => openChat(chatIds[index])}
-                />
-              ))
-            : null}
-          {isLoading ? (
-            <div className="flex w-full justify-center">
-              <Spinner />
+        {displayProfileSettings ? (
+          <div>
+            <div className="text-left m-2 bg-stone-800 p-2 flex items-center">
+              <button className="grow text-left">{email}</button>
+              <div
+                className="h-6 w-6 rounded-full border-2"
+                style={{ backgroundColor: color }}
+              ></div>
             </div>
-          ) : null}
-          {chats?.length === 0 && !isLoading ? (
-            <p className="w-full text-center">No Chats</p>
-          ) : null}
-        </div>
-        <button
-          className="bg-stone-700 text-left p-2 m-2 flex items-center justify-between"
-          onClick={() => openUsersList()}
-        >
-          Find Users
-          <FaSearch />
-        </button>
+            <div className="flex justify-center">
+              <HexColorPicker color={color} onChange={setColor} />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex flex-col overflow-scroll gap-1">
+              {chatIds
+                ? chats?.map((chat, index) => (
+                    <ChatElement
+                      key={index}
+                      name={chat}
+                      openChat={() => openChat(chatIds[index])}
+                    />
+                  ))
+                : null}
+              {isLoading ? (
+                <div className="flex w-full justify-center">
+                  <Spinner />
+                </div>
+              ) : null}
+              {chats?.length === 0 && !isLoading ? (
+                <p className="w-full text-center">No Chats</p>
+              ) : null}
+            </div>
+            <button
+              className="bg-stone-700 text-left p-2 m-2 flex items-center justify-between"
+              onClick={() => openUsersList()}
+            >
+              Find Users
+              <FaSearch />
+            </button>
+          </>
+        )}
       </div>
     </>
   );

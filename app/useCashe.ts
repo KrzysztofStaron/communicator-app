@@ -3,7 +3,7 @@ import { useEffect, useState, Dispatch, SetStateAction } from "react";
 export const useCashe = <T>(
   id: string,
   defaultValue?: T
-): [T | undefined, Dispatch<SetStateAction<T | undefined>>] => {
+): [T | undefined, Dispatch<SetStateAction<T | any>>] => {
   const [state, setState] = useState<T | undefined>();
 
   useEffect(() => {
@@ -15,11 +15,10 @@ export const useCashe = <T>(
   }, []);
 
   useEffect(() => {
-    if (state === undefined) {
-      return;
+    if (state !== undefined) {
+      localStorage.setItem(id, JSON.stringify(state));
     }
-    localStorage.setItem(id, JSON.stringify(state));
   }, [id, state]);
 
-  return [state || defaultValue, setState];
+  return [state || defaultValue || state, setState];
 };
