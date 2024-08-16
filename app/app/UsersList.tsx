@@ -18,6 +18,7 @@ const UsersList = ({
   const [users, setUsers] = useCashe<UserData[]>("userList_users", []);
   const [isLoading, setIsLoading] = useState(true);
   const [queryText, setQueryText] = useState("");
+  const [opening, setOpening] = useState(false);
 
   useEffect(() => {
     DataHelper.getUsers(queryText).then((users) => {
@@ -62,7 +63,10 @@ const UsersList = ({
             key={i}
           >
             <button
-              onClick={() => openChat(user.id)}
+              onClick={(e) => {
+                opening ? null : openChat(user.id);
+                setOpening(true);
+              }}
               className="grow text-left"
             >
               {user.email}

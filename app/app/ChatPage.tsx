@@ -23,6 +23,7 @@ export const ChatPage = ({
 }) => {
   const [chatMessages, setChatMessages] = useCashe<Message[]>(chatID, []);
   const [chatName, setChatName] = useCashe(`${chatID}_name`, "");
+
   const [displaySettings, setDisplaySettings] = useState(false);
 
   const [settings, setSettings] = useCashe<ChatSettings>(

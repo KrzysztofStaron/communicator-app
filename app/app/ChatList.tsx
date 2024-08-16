@@ -37,6 +37,7 @@ export const ChatList = ({
   openUsersList: () => void;
 }) => {
   const [chats, setChats] = useCashe<string[]>("chats", []);
+
   const [isLoading, setIsLoading] = useState(true);
   const [chatIds, setChatIds] = useCashe<string[]>("chatIds", []);
   const [email, setEmail] = useCashe<string>("email");
